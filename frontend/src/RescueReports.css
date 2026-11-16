@@ -1,0 +1,174 @@
+.rr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.rr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rr-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5b75;
+}
+
+.rr-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbdcf4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17243a;
+  font: inherit;
+  font-size: 13px;
+}
+
+.rr-input:focus {
+  outline: none;
+  border-color: #3478f6;
+  box-shadow: 0 0 0 3px rgba(52, 120, 246, 0.15);
+}
+
+textarea.rr-input {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.rr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rr-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.rr-submit {
+  background: #e74752;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rr-submit:hover:not(:disabled) {
+  background: #cc303c;
+}
+
+.rr-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rr-secondary {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #3478f6;
+  border: 1px solid #cbdcf4;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rr-secondary:hover {
+  background: #edf4ff;
+}
+
+.rr-message {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.rr-message.success {
+  background: #e2f7ed;
+  color: #0f7a52;
+}
+
+.rr-message.error {
+  background: #ffe8e9;
+  color: #b3303a;
+}
+
+.rr-empty {
+  color: #71829b;
+  font-size: 13px;
+}
+
+.rr-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.rr-item {
+  padding: 14px 0;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.rr-item:last-child {
+  border-bottom: none;
+}
+
+.rr-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rr-badge {
+  background: #e5efff;
+  color: #2164d8;
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rr-item strong {
+  font-size: 13px;
+  color: #26364d;
+}
+
+.rr-item p {
+  font-size: 12px;
+  color: #53647c;
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.rr-item small {
+  font-size: 11px;
+  color: #71829b;
+}
+
+.rr-fullmap {
+  height: 70vh;
+  min-height: 420px;
+  padding: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+  .rr-grid {
+    grid-template-columns: 1fr;
+  }
+}
