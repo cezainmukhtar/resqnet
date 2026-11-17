@@ -3,13 +3,30 @@ import 'leaflet/dist/leaflet.css'
 import './App.css'
 import MapView from './MapView'
 import RescueReports from './RescueReports'
-import { getStatus, getWeather, getReports } from './api'
+import Alerts from './Alerts'
+import {
+  getStatus,
+  getWeather,
+  getReports,
+  getAlerts,
+  MONITORED_LOCATION,
+} from './api'
+
+const SEVERITY_LABEL = { high: 'High', medium: 'Medium', low: 'Low' }
+
+const RISK_STYLE = {
+  LOW: { width: '25%', color: '#35ae7a' },
+  MODERATE: { width: '60%', color: '#f0a534' },
+  HIGH: { width: '92%', color: '#e74752' },
+}
 
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard')
   const [backendStatus, setBackendStatus] = useState('Checking...')
   const [weather, setWeather] = useState(null)
   const [weatherError, setWeatherError] = useState('')
+  const [alertData, setAlertData] = useState(null)
+  const [alertError, setAlertError] = useState('')
   const [reports, setReports] = useState([])
 
   const loadReports = useCallback(() => {
@@ -18,27 +35,54 @@ function App() {
       .catch(() => setReports([]))
   }, [])
 
-  useEffect(() => {
-    getStatus()
-      .then(data => setBackendStatus(data.status))
-      .catch(() => setBackendStatus('Offline'))
-  }, [])
+  const refreshForecast = useCallback(() => {
+    const { latitude, longitude } = MONITORED_LOCATION
 
-  useEffect(() => {
-    getWeather(28.4744, 77.5040)
+    getWeather(latitude, longitude)
       .then(data => {
         if (data.status === 'success') {
           setWeather(data.weather)
+          setWeatherError('')
         } else {
           setWeatherError('Weather data unavailable')
         }
       })
       .catch(() => setWeatherError('Unable to load weather data'))
+
+    getAlerts(latitude, longitude)
+      .then(data => {
+        setAlertData(data)
+        setAlertError('')
+      })
+      .catch(() => setAlertError('Unable to load alerts'))
   }, [])
 
+  // Check the backend every 30 seconds
   useEffect(() => {
+    const check = () =>
+      getStatus()
+        .then(data => setBackendStatus(data.status))
+        .catch(() => setBackendStatus('Offline'))
+
+    check()
+    const timer = setInterval(check, 30 * 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Load data as soon as the backend is reachable (also when it comes back
+  // after being down), then refresh the forecast every 5 minutes
+  useEffect(() => {
+    if (backendStatus !== 'Online') return
+
     loadReports()
-  }, [loadReports])
+    refreshForecast()
+    const timer = setInterval(refreshForecast, 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [backendStatus, loadReports, refreshForecast])
+
+  const alerts = alertData ? alertData.alerts : []
+  const riskLevel = alertData ? alertData.risk_level : null
+  const riskStyle = RISK_STYLE[riskLevel] || { width: '0%', color: '#e5eaf1' }
 
   const menu = [
     { name: 'Dashboard', icon: '▦' },
@@ -141,9 +185,15 @@ function App() {
                   <span>Disaster Risk Level</span>
                   <span className="stat-icon orange">⚠</span>
                 </div>
-                <h2>MODERATE</h2>
-                <p>Sample assessment</p>
-                <div className="risk-bar"><div></div></div>
+                <h2>{riskLevel || '--'}</h2>
+                <p>
+                  {riskLevel
+                    ? 'Rule-based · next 24 h forecast'
+                    : alertError || 'Loading...'}
+                </p>
+                <div className="risk-bar">
+                  <div style={{ width: riskStyle.width, background: riskStyle.color }}></div>
+                </div>
               </div>
 
               <div className="stat-card">
@@ -151,8 +201,8 @@ function App() {
                   <span>Active Alerts</span>
                   <span className="stat-icon red">!</span>
                 </div>
-                <h2>03</h2>
-                <p>Sample alert count</p>
+                <h2>{alertData ? String(alerts.length).padStart(2, '0') : '--'}</h2>
+                <p>Forecast-based · next 24 h</p>
               </div>
 
               <div className="stat-card">
@@ -205,37 +255,34 @@ function App() {
                 <div className="panel-header">
                   <div>
                     <h3>Recent Alerts</h3>
-                    <p>Emergency notifications</p>
+                    <p>Generated from the live forecast</p>
                   </div>
-                  <span className="alert-count">03</span>
+                  <span className="alert-count">
+                    {alertData ? String(alerts.length).padStart(2, '0') : '--'}
+                  </span>
                 </div>
 
-                <div className="alert-item">
-                  <span className="alert-indicator high"></span>
-                  <div>
-                    <strong>Heavy Rainfall Warning</strong>
-                    <p>Sample alert · High priority</p>
-                    <small>Just now</small>
-                  </div>
-                </div>
-
-                <div className="alert-item">
-                  <span className="alert-indicator medium"></span>
-                  <div>
-                    <strong>Flood Risk Advisory</strong>
-                    <p>Sample alert · Medium priority</p>
-                    <small>25 minutes ago</small>
-                  </div>
-                </div>
-
-                <div className="alert-item">
-                  <span className="alert-indicator low"></span>
-                  <div>
-                    <strong>Weather Monitoring</strong>
-                    <p>Sample alert · Low priority</p>
-                    <small>1 hour ago</small>
-                  </div>
-                </div>
+                {alerts.length === 0 ? (
+                  <p className="al-empty">
+                    {alertData
+                      ? 'No active alerts. Conditions are within normal ranges.'
+                      : alertError || 'Loading alerts...'}
+                  </p>
+                ) : (
+                  alerts.slice(0, 3).map((alert) => (
+                    <div className="alert-item" key={alert.id}>
+                      <span className={`alert-indicator ${alert.severity}`}></span>
+                      <div>
+                        <strong>{alert.title}</strong>
+                        <p>
+                          {SEVERITY_LABEL[alert.severity]} priority · {alert.metric_label}:{' '}
+                          {alert.value} {alert.unit}
+                        </p>
+                        <small>Valid for the next {alertData.window_hours} hours</small>
+                      </div>
+                    </div>
+                  ))
+                )}
 
                 <button
                   className="view-all"
@@ -251,7 +298,7 @@ function App() {
                 <div className="panel-header">
                   <div>
                     <h3>Weather Intelligence</h3>
-                    <p>Live weather data · Greater Noida</p>
+                    <p>Live weather data · {MONITORED_LOCATION.name}</p>
                   </div>
                   <span className="weather-icon">☁</span>
                 </div>
@@ -317,11 +364,19 @@ function App() {
           </section>
         )}
 
+        {activeTab === 'Emergency Alerts' && (
+          <Alerts
+            alertData={alertData}
+            error={alertError}
+            location={MONITORED_LOCATION}
+          />
+        )}
+
         {activeTab === 'Rescue Reports' && (
           <RescueReports reports={reports} onSubmitted={loadReports} />
         )}
 
-        {(activeTab === 'Emergency Alerts' || activeTab === 'Relief Centers') && (
+        {activeTab === 'Relief Centers' && (
           <section className="panel">
             <div className="panel-header">
               <div>
