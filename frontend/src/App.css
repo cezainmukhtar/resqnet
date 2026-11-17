@@ -656,8 +656,7 @@ footer {
   }
 
   .brand > div:last-child,
-  .nav-label,
-  .nav-item:not(.active) {
+  .nav-label {
     display: none;
   }
 

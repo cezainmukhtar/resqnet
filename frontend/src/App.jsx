@@ -110,6 +110,7 @@ function App() {
             <button
               key={item.name}
               className={`nav-item ${activeTab === item.name ? 'active' : ''}`}
+              title={item.name}
               onClick={() => setActiveTab(item.name)}
             >
               <span>{item.icon}</span>
