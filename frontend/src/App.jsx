@@ -4,11 +4,13 @@ import './App.css'
 import MapView from './MapView'
 import RescueReports from './RescueReports'
 import Alerts from './Alerts'
+import RainOutlook from './RainOutlook'
 import {
   getStatus,
   getWeather,
   getReports,
   getAlerts,
+  getRainOutlook,
   MONITORED_LOCATION,
 } from './api'
 
@@ -27,6 +29,8 @@ function App() {
   const [weatherError, setWeatherError] = useState('')
   const [alertData, setAlertData] = useState(null)
   const [alertError, setAlertError] = useState('')
+  const [rainOutlook, setRainOutlook] = useState(null)
+  const [rainError, setRainError] = useState('')
   const [reports, setReports] = useState([])
 
   const loadReports = useCallback(() => {
@@ -55,6 +59,13 @@ function App() {
         setAlertError('')
       })
       .catch(() => setAlertError('Unable to load alerts'))
+
+    getRainOutlook(latitude, longitude)
+      .then(data => {
+        setRainOutlook(data)
+        setRainError('')
+      })
+      .catch(error => setRainError(error.message))
   }, [])
 
   // Check the backend every 30 seconds
@@ -293,6 +304,12 @@ function App() {
                 </button>
               </div>
             </section>
+
+            <RainOutlook
+              outlook={rainOutlook}
+              error={rainError}
+              location={MONITORED_LOCATION}
+            />
 
             <section className="bottom-grid">
               <div className="panel">

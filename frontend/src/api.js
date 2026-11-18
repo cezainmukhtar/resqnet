@@ -27,6 +27,9 @@ export const getWeather = (latitude, longitude) =>
 export const getAlerts = (latitude, longitude) =>
   request(`/alerts?latitude=${latitude}&longitude=${longitude}`)
 
+export const getRainOutlook = (latitude, longitude) =>
+  request(`/predict/rain?latitude=${latitude}&longitude=${longitude}`)
+
 export const getReports = () => request('/reports')
 
 export const createReport = (report) =>

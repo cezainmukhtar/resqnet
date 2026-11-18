@@ -11,6 +11,15 @@ from flask_cors import CORS
 
 from alerts import describe_rules, evaluate_alerts, overall_risk, summarize_forecast
 
+# The ML parts are optional: the rest of the app works without them installed
+try:
+    import pandas as pd
+    from ml.features import HISTORY_HOURS, HOURLY_VARIABLES
+    from ml.predictor import ModelNotReady, load_rain_model, predict_rain
+    ML_IMPORT_ERROR = None
+except Exception as error:  # pandas / scikit-learn / joblib not installed
+    ML_IMPORT_ERROR = str(error)
+
 app = Flask(__name__)
 CORS(app)
 
@@ -23,6 +32,8 @@ EMERGENCY_TYPES = ["Flood", "Landslide", "Fire", "Earthquake", "Medical", "Other
 WINDOW_HOURS = 24
 FORECAST_TTL_SECONDS = 600
 FORECAST_CACHE = {}
+RECENT_CACHE = {}
+MODEL_MAX_DISTANCE_KM = 100
 
 
 def utc_now_text():
@@ -193,6 +204,118 @@ def get_alerts():
         "risk_level": overall_risk(alerts),
         "alerts": alerts,
         "rules": describe_rules(),
+    })
+
+
+def distance_km(lat1, lon1, lat2, lon2):
+    """Great-circle distance between two points, in kilometres."""
+    from math import asin, cos, radians, sin, sqrt
+    d_lat = radians(lat2 - lat1)
+    d_lon = radians(lon2 - lon1)
+    a = sin(d_lat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(d_lon / 2) ** 2
+    return 6371 * 2 * asin(sqrt(a))
+
+
+def rain_outlook_level(probability):
+    if probability < 0.20:
+        return "Unlikely"
+    if probability < 0.50:
+        return "Possible"
+    return "Likely"
+
+
+def fetch_recent_hourly(latitude, longitude):
+    """The last 48 hours up to the current hour, as a DataFrame (cached)."""
+    key = (round(latitude, 2), round(longitude, 2))
+    cached = RECENT_CACHE.get(key)
+
+    if cached and time.time() - cached["time"] < FORECAST_TTL_SECONDS:
+        return cached["frame"]
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "hourly": ",".join(HOURLY_VARIABLES),
+        "past_hours": 48,
+        "forecast_hours": 1,
+        "timezone": "UTC",
+    }
+    url = "https://api.open-meteo.com/v1/forecast?" + urlencode(params)
+
+    with urlopen(url, timeout=10) as response:
+        data = json.loads(response.read().decode())
+
+    frame = pd.DataFrame(data["hourly"])
+    frame["time"] = pd.to_datetime(frame["time"], utc=True)
+    frame = frame.set_index("time").sort_index()
+
+    # Never use an hour that has not started yet
+    frame = frame[frame.index <= pd.Timestamp.now(tz="UTC")]
+
+    RECENT_CACHE[key] = {"time": time.time(), "frame": frame}
+    return frame
+
+
+# MACHINE-LEARNING RAIN OUTLOOK
+@app.route("/predict/rain")
+def predict_rain_route():
+    if ML_IMPORT_ERROR:
+        return jsonify({
+            "status": "unavailable",
+            "message": "ML libraries are not installed. Run: pip install pandas numpy scikit-learn joblib"
+        }), 503
+
+    coordinates = parse_coordinates(
+        request.args.get("latitude"), request.args.get("longitude")
+    )
+
+    if coordinates is None:
+        return jsonify({
+            "error": "Valid latitude (-90 to 90) and longitude (-180 to 180) are required"
+        }), 400
+
+    latitude, longitude = coordinates
+
+    try:
+        _, card = load_rain_model()
+    except ModelNotReady as error:
+        return jsonify({"status": "not_trained", "message": str(error)}), 503
+
+    trained_at = card["location"]
+    away = distance_km(latitude, longitude, trained_at["latitude"], trained_at["longitude"])
+    if away > MODEL_MAX_DISTANCE_KM:
+        return jsonify({
+            "error": "The model was trained for a different area (%.0f km away)" % away
+        }), 400
+
+    try:
+        frame = fetch_recent_hourly(latitude, longitude)
+        probability, data_time, card = predict_rain(frame)
+    except ValueError as error:
+        return jsonify({"status": "error", "message": str(error)}), 502
+    except Exception:
+        app.logger.exception("Rain outlook failed")
+        return jsonify({
+            "status": "error",
+            "message": "Rain outlook unavailable"
+        }), 502
+
+    age_hours = (pd.Timestamp.now(tz="UTC") - data_time).total_seconds() / 3600
+    if age_hours > 3:
+        return jsonify({
+            "status": "error",
+            "message": "Recent weather data is out of date"
+        }), 502
+
+    return jsonify({
+        "status": "success",
+        "probability": round(probability, 3),
+        "percent": round(probability * 100),
+        "level": rain_outlook_level(probability),
+        "target": card["target"],
+        "data_time": data_time.strftime("%Y-%m-%d %H:%M:%S"),
+        "generated_at": utc_now_text(),
+        "model": card,
     })
 
 

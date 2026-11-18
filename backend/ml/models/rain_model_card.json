@@ -1,0 +1,151 @@
+{
+  "name": "ResQnet 24-hour rain outlook",
+  "trained_at_utc": "2026-11-18 06:10:55",
+  "location": {
+    "latitude": 28.4744,
+    "longitude": 77.504
+  },
+  "data_source": "Open-Meteo archive (ERA5 reanalysis, hourly)",
+  "data_range": {
+    "from": "2015-01-02",
+    "to": "2026-11-07"
+  },
+  "rows_used": 103872,
+  "target": "at least 2.5 mm of rain in the next 24 hours",
+  "features": [
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "temp_dew_spread",
+    "surface_pressure",
+    "cloud_cover",
+    "wind_speed_10m",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "pressure_change_3h",
+    "pressure_change_12h",
+    "pressure_change_24h",
+    "humidity_change_6h",
+    "temp_change_24h",
+    "rain_last_3h",
+    "rain_last_24h",
+    "hour_sin",
+    "hour_cos",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "hyperparameters": {
+    "learning_rate": 0.05,
+    "max_iter": 150,
+    "max_leaf_nodes": 8,
+    "min_samples_leaf": 200
+  },
+  "split": {
+    "train": "before 2023-01-01",
+    "validation": "2023-01-01 to 2024-01-01",
+    "test": "from 2024-01-01",
+    "test_rows": 25008,
+    "test_rain_rate": 0.209
+  },
+  "test_scores": {
+    "roc_auc": 0.9138,
+    "average_precision": 0.7268,
+    "brier": 0.0922
+  },
+  "baselines": {
+    "climatology_by_month": {
+      "roc_auc": 0.8358,
+      "average_precision": 0.5253,
+      "brier": 0.1198
+    },
+    "rained_in_last_24h": {
+      "roc_auc": 0.8618,
+      "average_precision": 0.6192
+    }
+  },
+  "calibration_on_test": [
+    {
+      "band": "0%-5%",
+      "hours": 13511,
+      "mean_predicted": 0.015,
+      "observed_rate": 0.018
+    },
+    {
+      "band": "5%-10%",
+      "hours": 2070,
+      "mean_predicted": 0.072,
+      "observed_rate": 0.096
+    },
+    {
+      "band": "10%-20%",
+      "hours": 1770,
+      "mean_predicted": 0.145,
+      "observed_rate": 0.216
+    },
+    {
+      "band": "20%-35%",
+      "hours": 1473,
+      "mean_predicted": 0.268,
+      "observed_rate": 0.287
+    },
+    {
+      "band": "35%-50%",
+      "hours": 1178,
+      "mean_predicted": 0.425,
+      "observed_rate": 0.429
+    },
+    {
+      "band": "50%-75%",
+      "hours": 2563,
+      "mean_predicted": 0.637,
+      "observed_rate": 0.588
+    },
+    {
+      "band": "75%-100%",
+      "hours": 2443,
+      "mean_predicted": 0.837,
+      "observed_rate": 0.806
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "rain_last_24h",
+      "auc_drop_when_shuffled": 0.0484
+    },
+    {
+      "feature": "cloud_cover",
+      "auc_drop_when_shuffled": 0.0299
+    },
+    {
+      "feature": "dew_point_2m",
+      "auc_drop_when_shuffled": 0.0253
+    },
+    {
+      "feature": "wind_dir_sin",
+      "auc_drop_when_shuffled": 0.0089
+    },
+    {
+      "feature": "wind_dir_cos",
+      "auc_drop_when_shuffled": 0.0024
+    },
+    {
+      "feature": "rain_last_3h",
+      "auc_drop_when_shuffled": 0.0012
+    },
+    {
+      "feature": "pressure_change_24h",
+      "auc_drop_when_shuffled": 0.001
+    },
+    {
+      "feature": "relative_humidity_2m",
+      "auc_drop_when_shuffled": 0.0004
+    }
+  ],
+  "notes": [
+    "Scores come from a model fitted on data before 2024 and tested on 2024 onwards; the saved model is refitted on all rows.",
+    "Trained on ERA5 reanalysis; live predictions use Open-Meteo's recent model data, which can differ slightly.",
+    "Trained for one location only.",
+    "Neighbouring hours are highly correlated, so scores are less certain than the row count suggests.",
+    "A statistical model like this is weaker than a physical weather-model forecast; use it as a complement."
+  ]
+}
