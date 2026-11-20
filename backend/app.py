@@ -10,6 +10,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from alerts import describe_rules, evaluate_alerts, overall_risk, summarize_forecast
+from hazard_routes import hazards_blueprint
 
 # The ML parts are optional: the rest of the app works without them installed
 try:
@@ -21,7 +22,8 @@ except Exception as error:  # pandas / scikit-learn / joblib not installed
     ML_IMPORT_ERROR = str(error)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
+app.register_blueprint(hazards_blueprint)
 
 # Database file always lives next to app.py, whatever folder you run it from
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resqnet.db")
@@ -395,4 +397,4 @@ def get_reports():
 
 # RUN SERVER
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

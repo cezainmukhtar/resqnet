@@ -1,0 +1,286 @@
+.hz-intro {
+  background: #e5efff;
+  color: #1d4f9c;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.hz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.hz-tag {
+  background: #e5efff;
+  color: #2164d8;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hz-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbdcf4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17243a;
+  font: inherit;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.hz-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.hz-summary strong {
+  font-size: 14px;
+  color: #172b4d;
+}
+
+.hz-summary p {
+  font-size: 12px;
+  color: #71829b;
+  margin-top: 3px;
+}
+
+.hz-level {
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  min-width: 82px;
+  text-align: center;
+}
+
+.hz-chart {
+  width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.hz-chart-line {
+  stroke: #b9c6d8;
+  stroke-dasharray: 4 3;
+  stroke-width: 1;
+}
+
+.hz-chart-label {
+  font-size: 9px;
+  fill: #71829b;
+}
+
+.hz-chart-day {
+  font-size: 10px;
+  fill: #71829b;
+}
+
+.hz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.hz-table th {
+  text-align: left;
+  color: #63748d;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e1e8f2;
+}
+
+.hz-table td {
+  padding: 7px 8px;
+  color: #26364d;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.hz-fine {
+  font-size: 11px;
+  color: #71829b;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.hz-caveats,
+.hz-explain {
+  margin: 10px 0 0 18px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.hz-caveats {
+  color: #71829b;
+}
+
+.hz-explain {
+  color: #26364d;
+}
+
+.hz-empty {
+  font-size: 13px;
+  color: #71829b;
+  line-height: 1.6;
+}
+
+.hz-error {
+  background: #ffe8e9;
+  color: #b3303a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hz-scenario {
+  background: #f1f5fb;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.hz-scenario > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5b75;
+}
+
+.hz-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.hz-chips button,
+.hz-custom button {
+  background: #ffffff;
+  color: #3478f6;
+  border: 1px solid #cbdcf4;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hz-chips button:hover,
+.hz-custom button:hover {
+  background: #edf4ff;
+}
+
+.hz-chips .hz-live {
+  color: #b3303a;
+  border-color: #f5cccc;
+}
+
+.hz-custom {
+  display: flex;
+  gap: 8px;
+}
+
+.hz-custom input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #cbdcf4;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.hz-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.hz-tile {
+  background: #f1f5fb;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.hz-tile span {
+  display: block;
+  font-size: 11px;
+  color: #63748d;
+  margin-bottom: 6px;
+}
+
+.hz-tile strong {
+  font-size: 22px;
+  color: #172b4d;
+}
+
+.hz-tile small {
+  display: block;
+  font-size: 11px;
+  color: #71829b;
+  margin-top: 4px;
+}
+
+.hz-rainbar {
+  margin-bottom: 10px;
+}
+
+.hz-rainbar-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #53647c;
+  margin-bottom: 5px;
+}
+
+.hz-rainbar-top strong {
+  color: #26364d;
+}
+
+.hz-track {
+  position: relative;
+  height: 9px;
+  background: #e5eaf1;
+  border-radius: 10px;
+  overflow: visible;
+}
+
+.hz-fill {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.hz-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 15px;
+  background: #26364d;
+}
+
+.hz-attribution {
+  font-size: 11px;
+  color: #8794a7;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+  .hz-grid {
+    grid-template-columns: 1fr;
+  }
+}

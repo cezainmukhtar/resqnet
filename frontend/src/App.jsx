@@ -5,15 +5,16 @@ import MapView from './MapView'
 import RescueReports from './RescueReports'
 import Alerts from './Alerts'
 import RainOutlook from './RainOutlook'
+import HazardRisk from './HazardRisk'
 import {
   getStatus,
   getWeather,
   getReports,
   getAlerts,
   getRainOutlook,
-  MONITORED_LOCATION,
 } from './api'
-
+import { useMonitoredLocation } from './LocationContext'
+import LocationSearch from './LocationSearch'
 const SEVERITY_LABEL = { high: 'High', medium: 'Medium', low: 'Low' }
 
 const RISK_STYLE = {
@@ -23,6 +24,7 @@ const RISK_STYLE = {
 }
 
 function App() {
+  const { location } = useMonitoredLocation()
   const [activeTab, setActiveTab] = useState('Dashboard')
   const [backendStatus, setBackendStatus] = useState('Checking...')
   const [weather, setWeather] = useState(null)
@@ -40,8 +42,10 @@ function App() {
   }, [])
 
   const refreshForecast = useCallback(() => {
-    const { latitude, longitude } = MONITORED_LOCATION
-
+    const { latitude, longitude } = location
+    setWeather(null)
+    setAlertData(null)
+    setRainOutlook(null)
     getWeather(latitude, longitude)
       .then(data => {
         if (data.status === 'success') {
@@ -78,7 +82,7 @@ function App() {
     check()
     const timer = setInterval(check, 30 * 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [location])
 
   // Load data as soon as the backend is reachable (also when it comes back
   // after being down), then refresh the forecast every 5 minutes
@@ -99,6 +103,7 @@ function App() {
     { name: 'Dashboard', icon: '▦' },
     { name: 'Live Map', icon: '⌖' },
     { name: 'Emergency Alerts', icon: '⚠' },
+    { name: 'Flood & Landslide', icon: '≋' },
     { name: 'Rescue Reports', icon: '▤' },
     { name: 'Relief Centers', icon: '⌂' },
   ]
@@ -166,7 +171,7 @@ function App() {
             </div>
           </div>
         </header>
-
+        <locationSearch />
         {activeTab === 'Dashboard' && (
           <>
             <section className="welcome">
@@ -308,7 +313,7 @@ function App() {
             <RainOutlook
               outlook={rainOutlook}
               error={rainError}
-              location={MONITORED_LOCATION}
+              location={location}
             />
 
             <section className="bottom-grid">
@@ -316,7 +321,7 @@ function App() {
                 <div className="panel-header">
                   <div>
                     <h3>Weather Intelligence</h3>
-                    <p>Live weather data · {MONITORED_LOCATION.name}</p>
+                    <p>Live weather data · {location.name}</p>
                   </div>
                   <span className="weather-icon">☁</span>
                 </div>
@@ -386,9 +391,11 @@ function App() {
           <Alerts
             alertData={alertData}
             error={alertError}
-            location={MONITORED_LOCATION}
+            location={location}
           />
         )}
+
+        {activeTab === 'Flood & Landslide' && <HazardRisk />}
 
         {activeTab === 'Rescue Reports' && (
           <RescueReports reports={reports} onSubmitted={loadReports} />

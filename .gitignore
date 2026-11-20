@@ -1,2 +1,27 @@
-backend/ml/data/
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Local data. The reports database can hold personal details, so never commit it.
+*.db
 backend/hazard_cache/
+backend/ml/data/
+backend/ml/models/*.joblib
+
+# Node
+node_modules/
+frontend/dist/
+
+# Environment files (keep the example)
+.env
+.env.*
+!.env.example
+
+# Editors
+.vscode/
+.idea/
