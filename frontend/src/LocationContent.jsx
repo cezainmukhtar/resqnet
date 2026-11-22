@@ -1,4 +1,3 @@
-// Cell 2: new file frontend/src/LocationContext.jsx
 import { createContext, useContext, useState } from 'react'
 import { MONITORED_LOCATION } from './api'
 

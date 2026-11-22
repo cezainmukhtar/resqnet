@@ -1,8 +1,7 @@
-// src/api.js
 // All backend calls live here. Override the URL with VITE_API_URL in frontend/.env
 export const API_URL = import.meta.env.VITE_API_URL ?? '/api'
 
-// The one place the dashboard monitors. Change it here to monitor somewhere else.
+// Default monitored place. Users can change it with the location search.
 export const MONITORED_LOCATION = {
   name: 'Greater Noida',
   latitude: 28.4744,
@@ -55,6 +54,7 @@ export const searchLocations = async (query) => {
     'https://geocoding-api.open-meteo.com/v1/search' +
     `?name=${encodeURIComponent(query)}&count=5&language=en&format=json`
   const res = await fetch(url)
+  if (!res.ok) throw new Error('Location search failed')
   const data = await res.json()
   return (data.results || []).map((r) => ({
     name: [r.name, r.admin1, r.country].filter(Boolean).join(', '),

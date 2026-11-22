@@ -1,4 +1,3 @@
-// src/LocationSearch.jsx
 import { useState } from 'react'
 import { searchLocations } from './api'
 import { useMonitoredLocation } from './LocationContext'
@@ -8,15 +7,20 @@ export default function LocationSearch() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   const onSearch = async (e) => {
     e.preventDefault()
     if (!query.trim()) return
     setBusy(true)
+    setError('')
     try {
-      setResults(await searchLocations(query))
+      const found = await searchLocations(query)
+      setResults(found)
+      if (!found.length) setError('No locations found')
     } catch {
       setResults([])
+      setError('Search failed, try again')
     } finally {
       setBusy(false)
     }
@@ -26,6 +30,7 @@ export default function LocationSearch() {
     setLocation(place)
     setResults([])
     setQuery('')
+    setError('')
   }
 
   return (
@@ -38,6 +43,7 @@ export default function LocationSearch() {
         />
         <button type="submit" disabled={busy}>{busy ? '...' : 'Search'}</button>
       </form>
+      {error && <p>{error}</p>}
       <ul>
         {results.map((p) => (
           <li key={`${p.latitude},${p.longitude}`}>
